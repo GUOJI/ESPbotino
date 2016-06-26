@@ -1,10 +1,9 @@
-//#ifndef DEBUGGING
-//#define DEBUGGING(...)
-//#endif
-//#ifndef DEBUGGING_L
-//#define DEBUGGING_L(...)
-//#endif
 
+#define REFRESH_RAINBOW 500
+#define WAIT_RAINBOW 10000
+#define BLUEPIN 13
+#define REDPIN 12
+#define GREENPIN 14
 
 
 

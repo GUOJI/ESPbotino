@@ -1,9 +1,16 @@
 #include "Connection.h"
+#include "ESP8266BASIC.h"
 
+int ledState = LOW;
+unsigned long previousMillis = 0;
+const long interval = 1000;
 
 void setup() {
-
+  //LED ON ESP
+  pinMode(BUILTIN_LED, OUTPUT);
+  delay(1000);
   Serial.begin(115200);
+  Serial.setDebugOutput(true);
   //LED
   pinMode(BLUEPIN, OUTPUT);
   pinMode(REDPIN, OUTPUT);
@@ -13,32 +20,40 @@ void setup() {
   pinMode( DIRA, OUTPUT);
   pinMode( PWMB, OUTPUT);
   pinMode( DIRB, OUTPUT);
-  
-  WifiConnect();
+
+  SetupSoftAP();
   WebSocketConnect();
   MDNSConnect();
+  SetupConfigPages();
   HTTPUpdateConnect();
+  GetWifiSetting();
+
 }
 
 void loop() {
-  if (WiFi.status() != WL_CONNECTED) {
-    WifiConnect();
-    WebSocketConnect();
-    MDNSConnect();
-  }
-  else {
 
-    webSocket.loop();
-    if (millis() - lastTimeHost > 10) {
+  if (millis() - lastTimeHost > 10) {
       httpServer.handleClient();
       lastTimeHost = millis();
+  }
+  if (WiFi.status() != WL_CONNECTED) {
+   WifiConnect();
     }
-//    if (millis() - lastTimeRefresh > WAIT_RAINBOW && millis() - lastTimeRefreshRainbow > rainbowDelay && rainbowFlag) {
-//      lastTimeRefreshRainbow = millis();
-//      writeWheel(cnt++, RGB);
-//    }
-
-DoJob();
-
+  else {
+    webSocket.loop();
+    DoJob();
+    }
+    
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+      previousMillis = currentMillis;
+      if (ledState == LOW)
+        ledState = HIGH;  // Note that this switches the LED *off*
+      else
+        ledState = LOW;   // Note that this switches the LED *on*
+      digitalWrite(BUILTIN_LED, ledState);
   }
 }
+
+
+
