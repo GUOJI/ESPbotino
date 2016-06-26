@@ -1,5 +1,3 @@
-//#define SSID_ME "INFINITEWALL002"      //WIFI
-//#define PW_ME "19880602"
 #define HOST_ME "ESPBOT"
 
 /* Soft AP network parameters */
@@ -51,7 +49,9 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
       break;
     case WStype_CONNECTED:
       {
-       IPAddress ip = webSocket.remoteIP(num);
+        IPAddress ip = webSocket.remoteIP(num);
+        //String text = String((char *) &payload[0]);
+        Serial.println((String)ip);
       }
       break;
       
@@ -60,7 +60,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
         lastTimeRefresh = millis();
         String text = String((char *) &payload[0]);
         HandleCommond(text);
-        webSocket.sendTXT(num, "jackishere", length);
+        webSocket.sendTXT(num, text);
       }
       break;
 
@@ -72,7 +72,7 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
     }
       break;
   }
-webSocket.sendTXT(num, "Got it", length);
+webSocket.sendTXT(num, "Got it", 6);
   
 }
 
@@ -85,33 +85,25 @@ void SetupSoftAP(){
   Serial.println(WiFi.softAPIP());  
 }
 
-
-
- 
   void handleHome(){
   Serial.println("scan start");
   int n = WiFi.scanNetworks();
   Serial.println("scan done");
+
+   httpServer.sendContent(Content1());
+   httpServer.sendContent(Content2());
+  
   if (n > 0) {
     httpServer.sendContent("<p>WiFi in Range</p>");
     for (int i = 0; i < n; i++) {
-      httpServer.sendContent(String() + "<br />\r\n<tr><td>SSID " + WiFi.SSID(i) + String((WiFi.encryptionType(i) == ENC_TYPE_NONE)?" ":" *") + " (" + WiFi.RSSI(i) + ")</td></tr>");
+       httpServer.sendContent("<option>"+(String)WiFi.SSID(i)+"</option>");
     }
   } 
   else {
-    httpServer.sendContent(String() + "<tr><td>No WLAN found</td></tr>");
+    httpServer.sendContent( "<option value=\"\" disabled=\"disabled\" selected=\"selected\">NO WiFi FOUND</option>" );
   }
-  httpServer.sendContent(
-    "</table>"
-    "\r\n<br /><form method='POST' action='wifisave'><h4>Connect to network:</h4>"
-    "<br />SSID:<input type='text' placeholder='network' name='n'/>"
-    "<br />PASSWORD:<input type='password' placeholder='password' name='p'/>"
-    "<br /><input type='submit' value='Connect/Disconnect'/></form>"
-    "<p>ESP_BOTINO</p>"
-    "<p>BY:GUOJI</p>"
-    "<p>HAVE FUN</p>"
-    "</body></html>"
-  );
+
+  httpServer.sendContent(Content3());
   httpServer.client().stop(); // Stop is needed because we sent no content 
   }
 
@@ -130,14 +122,14 @@ void handleWifiSave() {
   connect = strlen(ssid) > 0; // Request WLAN connect with new credentials if there is a SSID
 }
 
-
-
-
-
+void handleContent1(){
+   httpServer.sendContent("test page :P");
+}
 
 
 //init config pages
 void SetupConfigPages(){
+    httpServer.on("/test", handleContent1);
     httpServer.on("/", handleHome);
     httpServer.on("/wifisave",handleWifiSave);
     httpServer.onNotFound( handleHome );
