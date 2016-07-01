@@ -64,7 +64,7 @@ int iAnalogRead(int pin){
   return analogRead(pin);
 }
 
-int iHandleCommand(String Comm) {
+String iHandleCommand(String Comm) {
    int pin=-1;
    String value=""; 
    
@@ -74,30 +74,30 @@ int iHandleCommand(String Comm) {
     pin = iGetPin(Comm.substring(2, 4));
     value = Comm.substring(4, Comm.length());
     iPinMode(pin, value); 
-    return 1;
+    return "1";
   }
   else if(F=="DW"){
     //digitalWrite
     pin = iGetPin(Comm.substring(2, 4));
     value = Comm.substring(4, Comm.length());
     iDigitalWrite(pin,value);
-     return 2;
+     return "2";
   }
   else if(F=="AW"){
     //analogWrite
     pin = iGetPin(Comm.substring(2, 4));
     value = Comm.substring(4, Comm.length());
     iAnalogWrite(pin,value);
-    return 3;
+    return "3";
   }
   else if(F=="DR"){
     pin = iGetPin(Comm.substring(2, 4));
-    return iDigitalRead(pin);
+    return "DR"+(String)iDigitalRead(pin);
     //return 4;
   }
   else if(F=="AR"){
     pin = iGetPin(Comm.substring(2, 4));
-    return iAnalogRead(pin);
+    return "AR"+(String)iAnalogRead(pin);
     //return 5;
   }  
   Serial.println(F + "....." + (String)pin + "...." + (String)value);

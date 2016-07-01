@@ -63,11 +63,11 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
 
 
         Serial.println( text );
-        int result=iHandleCommand(text);
+        String result=iHandleCommand(text);
         LEDcommond(text);
         MotorCommond(text);
-        String R=(String)result;
-        webSocket.sendTXT(num, R);
+        //String R=(String)result;
+        webSocket.sendTXT(num, result);
       }
       break;
 
