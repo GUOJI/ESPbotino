@@ -1,5 +1,4 @@
 #include "Connection.h"
-#include "ESP8266BASIC.h"
 
 int ledState = LOW;
 unsigned long previousMillis = 0;
@@ -20,7 +19,7 @@ void setup() {
   pinMode( DIRA, OUTPUT);
   pinMode( PWMB, OUTPUT);
   pinMode( DIRB, OUTPUT);
-
+//ESP.getChipID();
   SetupSoftAP();
   WebSocketConnect();
   MDNSConnect();
@@ -41,7 +40,8 @@ void loop() {
     }
   else {
     webSocket.loop();
-    DoJob();
+    
+    LEDRainBow();
     }
     
   unsigned long currentMillis = millis();

@@ -37,6 +37,7 @@ String Content2(){
 "<body>"
     "<form method=\"post\" action=\"wifisave\">"
         "<div class=\"column-5\"><h2>ESPBotino WiFi Config :P</h2></div>"
+        "<div class=\"column-5\"><h2><input name=\"wn\" placeholder=\"Give ur toy a Name\"></h2></div>"        
         "<div class=\"column-6 form-select\">"
             "<select name=\"n\" id=\"\">"
                 "<option value=\"\" disabled=\"disabled\" selected=\"selected\">Choose a WiFi</option>"

@@ -1,5 +1,6 @@
 char ssid[32] = "";
 char password[32] = "";
+char iname[8]="";
 
 
 
@@ -10,6 +11,19 @@ void saveCredentials() {
   char ok[2+1] = "OK";
   EEPROM.put(0+sizeof(ssid)+sizeof(password), ok);
   EEPROM.commit();
+  EEPROM.end();
+}
+
+void saveWifiName(){
+    EEPROM.begin(512);
+  EEPROM.put(256,iname);
+  EEPROM.commit();
+  EEPROM.end();
+}
+
+void loadWifiName(){
+  EEPROM.begin(512);
+  EEPROM.get(256, iname);
   EEPROM.end();
 }
 

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>ESPBot control page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <script>
+        $(document).bind('mobileinit', function () {
+            $.mobile.changePage.defaults.changeHash = false;
+            $.mobile.hashListeningEnabled = false;
+            $.mobile.pushStateEnabled = false;
+        });
+    </script>
+
+    <script>
+
+        var ipValue;
+        var connection;
+
+        function ledFn() {
+            var toSend = "LED";
+            connection.send(toSend);
+        };
+
+        function resetFn() {
+            var toSend = "RESET";
+            connection.send(toSend);
+        };
+
+        function conn() {
+           // alert("AAAAA");
+            connection.send("STOP");
+            
+        };
+
+
+        function forward() { connection.send("F123"); };
+        function back() { connection.send("B123"); };
+        function left() { connection.send("L123"); };
+        function right() { connection.send("R123"); };
+        function stop() { connection.send("STOP"); };
+        function sendX() { connection.send(document.getElementById("Comm").value); };
+        
+
+
+        function mod() {
+            //  alert("AAAAA");
+            
+            var text = document.getElementById('ip').value;
+            ipValue = text;
+            connection = new WebSocket(ipValue, ['arduino']);
+            connection.onopen = function (evt) {
+                console.log("CONNECTED");
+                document.getElementById("console1").textContent += "CONNECTED\n";
+            };
+            connection.onclose = function (evt) {
+                console.log("DISCONNECTED");
+                document.getElementById("console1").textContent += "DISCONNECTED\n";
+            };
+
+            connection.onmessage = function (evt) {
+                var pin = evt.data.charAt(1);
+                var element;
+                console.log(evt.data);
+                
+                document.getElementById("console1").textContent += evt.data+"\n";
+                if (pin == 1) {
+                    element = document.getElementById("redbar");
+                    element.style.width = evt.data.substring(2) + "px";
+                } else if (pin == 2) {
+                    element = document.getElementById("greenbar");
+                    element.style.width = evt.data.substring(2) + "px";
+                } else if (pin == 3) {
+                    element = document.getElementById("bluebar");
+                    element.style.width = evt.data.substring(2) + "px";
+                } 
+                
+            };
+            connection.onerror = function (evt) {
+                console.log("ERROR: " + evt.data);
+            };
+
+
+            console.log(text)
+            console.log("IP value changed to:" + ipValue);
+            
+        }
+
+        function showValueR(newValue) {
+            connection.send("x" + newValue);
+        }
+
+        function showValueG(newValue) {
+            connection.send("y" + newValue);
+        }
+        function showValueB(newValue) {
+            connection.send("z" + newValue);
+        }
+        function setRainbowSpeed(newValue) {
+            connection.send("t" + newValue);
+        }
+
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        function sendColor(newValue) {
+            var RGBColor = hexToRgb(newValue);
+            console.log(RGBColor);
+            showValueR(Math.round(RGBColor.r / 255 * 1023));
+            showValueG(Math.round(RGBColor.g / 255 * 1023));
+            showValueB(Math.round(RGBColor.b / 255 * 1023));
+        }
+
+        function rainbowFn() {
+            var toSend = "RAINBOW";
+            connection.send(toSend);
+        };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /////////////////////////
+        /////////////////////////////
+        /////////////////////////////
+        //////////////////////////////
+        ////////////////main loop here
+
+
+
+
+        var setup = function () {
+            //alert("wtf");
+            document.getElementById("console1").textContent += "loop started\n";
+            //connection.send("PM");
+        }
+
+        
+
+
+        var lastRun = Date.now(); // milliseconds elapsed since 1 January 1970 00:00:00 UTC up until now as a number.
+        var minDelta =10; // means maximum fps = 100
+        var t;
+        var loop = function () {
+            // Schedule the next run
+            t=window.setTimeout(loop, minDelta);
+
+            // Find the delta and set lastRun to now
+            var now = Date.now();
+            var delta = now - lastRun;
+            lastRun = now;
+
+            // Then run the game logic
+            console.log(delta);
+            connection.send("DW00H");
+            connection.send("AW051024");
+
+
+            delay(2000);
+            //connection.send("DW00H");
+            connection.send("AW050");
+
+            delay(2000);
+            //connection.send(document.getElementById("Comm").value);
+
+
+
+        }
+        //loop();
+
+        function startloop() {
+            setup();
+            window.setTimeout(loop, minDelta);
+        }
+
+        
+        function stoploop() 
+        { 
+            clearTimeout(t) 
+        } 
+
+
+
+        function delay(milliseconds) {
+            var start = new Date().getTime();
+            for (var i = 0; i < 1e7; i++) {
+                if ((new Date().getTime() - start) > milliseconds) {
+                    break;
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+</head>
+<body>
+
+    <div data-role="page" id="page1">
+        <div data-role="header">
+            <h1>ESPBot control page</h1>
+            <button onclick="forward()">forward</button>
+            <button onclick="back()">back</button>
+            <button onclick="left()">left</button>
+            <button onclick="right()">right</button>
+            <button onclick="stoploop()">stop</button>
+            <button onclick="startloop()">startloop</button>
+        </div>
+
+        <div>
+            <input type="text" id="Comm" value="WD09H" />
+            <button onclick="sendX()">sendComm</button>
+        </div>
+        <div data-role="content">
+            <div data-role="fieldcontain">
+                <label for="text1">WebSocket IP</label>
+                <input type="text" id="ip" value="ws://192.168.31.50:81/" onblur='mod()' />
+            </div>
+            <script>mod()</script>
+            <div data-role="fieldcontain" id="slider1">
+                <label for="slider1-range">Red</label>
+                <input type="range" id="slider1-range" value="0" min="0" max="1023" step="5" onchange="showValueR(this.value)"
+                       data-highlight="true" />
+            </div>
+            <div data-role="fieldcontain" id="slider2">
+                <label for="slider2-range">Green</label>
+                <input type="range" id="slider2-range" value="0" min="0" max="1023" onchange="showValueG(this.value)"
+                       step="5" data-highlight="true" />
+            </div>
+            <div data-role="fieldcontain" id="slider3">
+                <label for="slider3-range">Blue</label>
+                <input type="range" id="slider3-range" value="0" min="0" max="1023" onchange="showValueB(this.value)"
+                       step="5" data-highlight="true" />
+            </div>
+            <div data-role="fieldcontain" id="slider3">
+                <label for="slider3-range">Pick Any Color</label>
+                <input type="color" id="html5colorpicker" onchange="sendColor(this.value)" value="#ff0000" style="width:85%;">
+            </div>
+            <div class="ui-grid-b">
+                <div class="ui-block-a">
+                    <a data-role="button" id="Blink" onclick="ledFn()" data-inline="true">Blink</a>
+                </div>
+                <div class="ui-block-b">
+                    <a data-role="button" id="Reset" onclick="resetFn()" data-inline="true">Reset</a>
+                </div>
+
+
+
+                <div class="ui-block-b">
+                    <a data-role="button" id="conn" onclick="conn()" data-inline="true">connect</a>
+                </div>
+
+
+
+                <div class="ui-block-c">
+                    <a data-role="button" id="Rainbow" onclick="rainbowFn()" data-inline="true">Rainbow</a>
+                </div>
+            </div>
+            <div data-role="fieldcontain" id="slider3">
+                <label for="slider3-range">Rainbow Speed</label>
+                <input type="range" id="slider3-range" value="0" min="10" max="2000" onchange="setRainbowSpeed(this.value)"
+                       step="5" data-highlight="true" />
+            </div>
+        </div>
+        <div>
+            console:<br /><textarea id="console1"style="width:500px;height:300px; " readonly="readonly"></textarea>
+        </div>
+        <div data-role="footer">
+
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+</body>
+
+</html>

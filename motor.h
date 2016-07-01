@@ -3,10 +3,10 @@
 #define D3 0
 #define D4 2      
 
-#define PWMA D1
-#define DIRA D3
-#define PWMB D2
-#define DIRB D4
+#define PWMA D1 //5
+#define DIRA D3 //0
+#define PWMB D2 //4
+#define DIRB D4 //2
 
 
 // constants won't change :
