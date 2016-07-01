@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>My CSS Console</title>
+
+    <style>
+body {
+  font-family: 'Cousine', 'monospace';
+  color: #C0C0C0;
+}
+
+#console {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  width: 500px;
+  height: 300px;
+   margin:0;
+
+  background-color: #343434;
+  border-color: #CABFA6;
+  border-style: solid;
+  border-top-width: 30px;
+  border-left-width: 30px;
+  border-right-width: 30px;
+  border-bottom-width: 60px;
+  border-radius: 10px;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  box-shadow: inset 0 0 0px 7px #928771, inset 0 0 0px 12px rgba(0, 0, 0, 0.2);
+}
+#console::before {
+  position: absolute;
+  content: '';
+  width: 70px;
+  height: 10px;
+  background-color: #343434;
+  right: 20px;
+  bottom: -35px;
+}
+#console::after {
+  position: absolute;
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 6px;
+  background-color: #343434;
+  right: 5px;
+  bottom: -32px;
+}
+
+    </style>
+
+<!-- button -->
+
+    <style>
+        html, body{
+  min-height:100%;
+}
+
+body{
+  		background-image: -webkit-linear-gradient(top, #edecec, #cecbc9);
+			background-image: linear-gradient(top, #edecec, #cecbc9);
+}
+
+
+
+.buttonHolder{
+
+      position: absolute;
+  top: 20%;
+  left: 40%;
+  /*margin:80px auto;*/
+
+  width:400px;
+}
+
+
+		.button{
+			background-image: -webkit-linear-gradient(top, #f4f1ee, #fff);
+			background-image: linear-gradient(top, #f4f1ee, #fff);
+			border-radius: 50%;
+			box-shadow: 0px 8px 10px 0px rgba(0, 0, 0, .3), inset 0px 4px 1px 1px white, inset 0px -3px 1px 1px rgba(204,198,197,.5);
+			float:left;
+			height: 70px;
+			margin: 0 30px 30px 0;
+			position: relative;
+			width: 70px;			
+			-webkit-transition: all .1s linear;
+			transition: all .1s linear;
+		}
+
+		.button:after{
+			color:#e9e6e4;
+			content: "";
+			display: block;
+			font-size: 30px;
+			height: 30px;
+			text-decoration: none;
+			text-shadow: 0px -1px 1px #bdb5b4, 1px 1px 1px white;
+			position: absolute;
+			width: 30px;
+		}
+
+
+		.heart:after{
+			content: "❤";
+			left: 21px;
+			top: 21px;
+		}
+
+		.flower:after{
+			content: "✿";
+			left: 23px;
+			top: 19px;
+		}
+
+		.tick:after{
+			content: "✔";
+			left:23px;
+			top:20px;
+		}
+
+		.cross:after{
+			content: "✖";
+			left: 24px;
+			top: 19px;
+		}
+
+		.button:hover{
+			background-image: -webkit-linear-gradient(top, #fff, #f4f1ee);
+			background-image: linear-gradient(top, #fff, #f4f1ee);
+			color:#0088cc;
+		}
+
+		.heart:hover:after{
+			color:#f94e66;
+			text-shadow:0px 0px 6px #f94e66;
+		}
+
+		.flower:hover:after{
+			color:#f99e4e;
+			text-shadow:0px 0px 6px #f99e4e;
+		}
+
+		.tick:hover:after{
+			color:#83d244;
+			text-shadow:0px 0px 6px #83d244;
+		}
+
+		.cross:hover:after{
+			color:#eb2f2f;
+			text-shadow:0px 0px 6px #eb2f2f;
+		}
+
+		
+
+		.button:active{
+			background-image: -webkit-linear-gradient(top, #efedec, #f7f4f4);
+			background-image: linear-gradient(top, #efedec, #f7f4f4);
+			box-shadow: 0 3px 5px 0 rgba(0,0,0,.4), inset 0px -3px 1px 1px rgba(204,198,197,.5);
+		}
+
+		.button:active:after{
+			color:#dbd2d2;
+			text-shadow: 0px -1px 1px #bdb5b4, 0px 1px 1px white;
+		}
+    </style>
+
+
+
+
+</head>
+
+<body>
+    <h2>Control ESP8266 with javascript via websocket</h2>
+    <h2>Save this page and make changes</h2>
+    <h3>MCU ip: <input type="text" id="ip" value="ws://192.168.31.50:81/" onblur='mod()' /></h3>
+    
+    <div id="console">
+        <textarea id="console1" style="height:295px; width:495px; background-color:#343434; font-size: 16px; color: grey;" readonly="readonly">~$ Wellcome</textarea>
+    </div>
+
+        <div class="buttonHolder">
+            <a onclick="startloop()" class="button tick"></a>
+            <a onclick="stoploop()" class="button cross"></a>
+            <a href="#" class="button heart"></a>
+            <a onclick="sendX()" class="button flower"></a>
+        </div>
+  
+
+    <script>
+        $(document).bind('mobileinit', function () {
+            $.mobile.changePage.defaults.changeHash = false;
+            $.mobile.hashListeningEnabled = false;
+            $.mobile.pushStateEnabled = false;
+        });
+    </script>
+
+    <script>
+
+    var ipValue;
+    var connection;
+    var mess;
+    var messageCount=0;
+
+    function consoleUpdate(text) {
+        var content = document.getElementById("console1").textContent;
+        document.getElementById("console1").textContent = "~$ " + text + "\n" + content;
+    }
+
+    function mod() {
+        messageCount = 0;
+        var text = document.getElementById('ip').value;
+        ipValue = text;
+        //document.getElementById("console1").textContent += "\n~$ IP value changed to:" + ipValue;
+        consoleUpdate("IP value changed to: " + ipValue);
+
+
+        connection = new WebSocket(ipValue, ['arduino']);
+        connection.onopen = function (evt) {
+            //document.getElementById("console1").textContent += "\n~$ CONNECTED";
+            consoleUpdate("CONNECTED");
+        };
+        connection.onclose = function (evt) {
+           // document.getElementById("console1").textContent += "\n~$ DISCONNECTED";
+            consoleUpdate("DISCONNECTED");
+        };
+        connection.onmessage = function (evt) {
+            mess = evt.data;
+            messageCount++;
+            //document.getElementById("console1").textContent += "\n~$ From NODEMCU: " + mess;
+            consoleUpdate("From NODEMCU: " + mess);
+        };
+        connection.onerror = function (evt) {
+            //document.getElementById("console1").textContent += "\n~$ ERROR: " + evt.data;
+            consoleUpdate("ERROR: " + evt.data);
+        };
+           
+    }
+
+
+    function GetPin(pin){
+        if(pin>10)
+            return pin;
+        else return "0"+pin;
+    }
+
+    function PinMode(pin, mode) {
+        if (mode == "INPUT") { connection.send("PM"+GetPin(pin)+"I"); }
+        else if (mode == "OUTPUT") { connection.send("PM" + GetPin(pin) + "O");}            
+    }
+
+    function DigitalWrite(pin, HL) {
+        if (HL == "HIGH") {connection.send("DW" + GetPin(pin) + "H");}
+        else if (HL == "LOW") { connection.send("DW" + GetPin(pin) + "L"); }
+        
+    }
+
+    function AnalogWrite(pin, value) {
+        var C = messageCount;
+        connection.send("AW" + GetPin(pin) + value);
+    }
+
+    function DigitalRead(pin) {
+        connection.send("DR" + GetPin(pin));
+        delay(50);
+      
+    }
+
+    function AnalogRead(pin) {
+        connection.send("AR" + GetPin(pin));
+        delay(50);
+    }
+
+    /////////////////////////
+    /////////////////////////////
+    /////////////////////////////
+    //////////////////////////////
+    ////////////////main loop here
+
+
+
+
+
+        
+
+
+    var lastRun = Date.now(); // milliseconds elapsed since 1 January 1970 00:00:00 UTC up until now as a number.
+    var minDelta =10; // means maximum fps = 100
+    var t;
+
+
+    function delay(milliseconds) {
+        var start = new Date().getTime();
+        for (var i = 0; i < 1e7; i++) {
+            if ((new Date().getTime() - start) > milliseconds) {
+                break;
+            }
+        }
+    }
+
+
+
+    var MainSetup = function () {
+        setup();
+    }
+
+    var Mainloop = function () {
+        // Schedule the next run
+        t = window.setTimeout(Mainloop, minDelta);
+
+        // Find the delta and set lastRun to now
+        var now = Date.now();
+        var delta = now - lastRun;
+        lastRun = now;
+
+        // Then run the game logic
+        console.log(delta);
+        loop();
+
+    }
+
+    function startloop() {
+        consoleUpdate("MCU JOB START");
+        //document.getElementById("console1").textContent += "\n~$ MCU JOB START";
+        MainSetup();
+        window.setTimeout(Mainloop, minDelta);
+    }
+        
+    function stoploop() 
+    { 
+        clearTimeout(t)
+        consoleUpdate("MCU STOP JOB");
+        //document.getElementById("console1").textContent += "\n~$ MCU STOP JOB";
+    } 
+
+
+
+
+
+
+
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <script>
+
+
+
+
+        function setup() {
+            //set up
+            PinMode(5, "OUTPUT");
+            PinMode(0, "OUTPUT");
+        }
+
+
+        function loop() {
+            //your logic here
+
+            DigitalWrite(0, "HIGH");
+            AnalogWrite(5, 1024);
+            delay(2000);
+            AnalogWrite(5, 0);
+            delay(2000);
+        }
+
+
+    </script>
+
+</body>
+</html>
