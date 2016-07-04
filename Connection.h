@@ -5,6 +5,7 @@
 const char *softAP_password = "12345678";
 char mysoftAP[32] = "";
 
+
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
@@ -14,6 +15,8 @@ char mysoftAP[32] = "";
 #include <Arduino.h>
 #include <WebSocketsServer.h>
 #include <Hash.h>
+#include <ArduinoJson.h>   
+#include <FS.h>   
 #include "Credentials.h"
 #include "LED.h"
 #include "motor.h"
@@ -37,6 +40,10 @@ boolean connect;
 long lastConnectTry = 0;
 /** Current WLAN status */
 int status = WL_IDLE_STATUS;
+
+char mqtt_server[40];
+char mqtt_port[6] = "8080";
+char blynk_token[34] = "YOUR_BLYNK_TOKEN";
 
 
 
@@ -86,7 +93,7 @@ void SetupSoftAP() {
   loadWifiName();
   WiFi.softAPConfig(apIP, apIP, netMsk);
   //WiFi.softAP(softAP_ssid, softAP_password);
-  String thisname=(String)iname+"ESP_Need_Setup_WiFi";
+  String thisname=(String)ESP.getChipId()+"_Need_Setup_WiFi";
   thisname.toCharArray(mysoftAP, 32);
      // sprintf(mysoftAP, thisname);
   WiFi.softAP(mysoftAP);
@@ -96,6 +103,7 @@ void SetupSoftAP() {
 }
 
 void handleHome() {
+  httpServer.sendContent(Header());
   Serial.println("scan start");
   int n = WiFi.scanNetworks();
   Serial.println("scan done");
@@ -112,6 +120,9 @@ void handleHome() {
   }
   ContentFinal = ContentFinal + ContentX + Content3();
   httpServer.sendContent(ContentFinal);
+  httpServer.sendContent(Script1());
+   httpServer.sendContent(Script2());
+    httpServer.sendContent(Script3());
   httpServer.client().stop(); // Stop is needed because we sent no content
 }
 
@@ -138,15 +149,48 @@ void handleContent1() {
   httpServer.sendContent("test page :P");
 }
 
+void SetupFS(){
+   if (SPIFFS.begin()) {
+    Serial.println("mounted file system");
+    if (SPIFFS.exists("/config.json")) {
+      //file exists, reading and loading
+      Serial.println("reading config file");
+      File configFile = SPIFFS.open("/config.json", "r");
+      if (configFile) {
+        Serial.println("opened config file");
+        size_t size = configFile.size();
+        // Allocate a buffer to store contents of the file.
+        std::unique_ptr<char[]> buf(new char[size]);
+
+        configFile.readBytes(buf.get(), size);
+        DynamicJsonBuffer jsonBuffer;
+        JsonObject& json = jsonBuffer.parseObject(buf.get());
+        json.printTo(Serial);
+        if (json.success()) {
+          Serial.println("\nparsed json");
+
+          strcpy(mqtt_server, json["mqtt_server"]);
+          strcpy(mqtt_port, json["mqtt_port"]);
+          strcpy(blynk_token, json["blynk_token"]);
+
+        } else {
+          Serial.println("failed to load json config");
+        }
+      }
+    }
+  } else {
+    Serial.println("failed to mount FS");
+  }
+  //end read
+}
+
 
 //init config pages
 void SetupConfigPages() {
   httpServer.on("/test", handleContent1);
   httpServer.on("/", handleHome);
   httpServer.on("/wifisave", handleWifiSave);
-  httpServer.onNotFound( handleHome );
-  // httpServer.begin();
-  //Serial.println("HTTP server started");
+  httpServer.serveStatic("/", SPIFFS, "/");
 }
 
 //get WiFiSetting

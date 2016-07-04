@@ -1,15 +1,28 @@
 #include "Connection.h"
+ 
+
+
 
 int ledState = LOW;
 unsigned long previousMillis = 0;
 const long interval = 1000;
 
 void setup() {
-  //LED ON ESP
+
   pinMode(BUILTIN_LED, OUTPUT);
   delay(1000);
   Serial.begin(115200);
+  
+//
+
+
+
+  
+
   Serial.setDebugOutput(true);
+  String a=(String)ESP.getChipId();
+  Serial.println("..");
+  Serial.println("Serial number: "+a);
   //LED
   pinMode(BLUEPIN, OUTPUT);
   pinMode(REDPIN, OUTPUT);
@@ -19,10 +32,11 @@ void setup() {
   pinMode( DIRA, OUTPUT);
   pinMode( PWMB, OUTPUT);
   pinMode( DIRB, OUTPUT);
-//ESP.getChipID();
+
   SetupSoftAP();
   WebSocketConnect();
   MDNSConnect();
+  SetupFS();
   SetupConfigPages();
   HTTPUpdateConnect();
   GetWifiSetting();
