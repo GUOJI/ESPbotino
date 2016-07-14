@@ -1,0 +1,493 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Botino IDE</title>
+
+    <!-- button -->
+
+    <style>
+        html, body {
+            font-family: 'Cousine', 'monospace';
+            color: #C0C0C0;
+            min-height: 100%;
+        }
+
+        body {
+            background-image: -webkit-linear-gradient(top, #edecec, #cecbc9);
+            background-image: linear-gradient(top, #edecec, #cecbc9);
+        }
+
+
+
+        .buttonHolder {
+            position: absolute;
+            top: 20%;
+            left: 40%;
+            width: 400px;
+        }
+
+
+        .button {
+            background-image: -webkit-linear-gradient(top, #f4f1ee, #fff);
+            background-image: linear-gradient(top, #f4f1ee, #fff);
+            border-radius: 50%;
+            box-shadow: 0px 8px 10px 0px rgba(0, 0, 0, .3), inset 0px 4px 1px 1px white, inset 0px -3px 1px 1px rgba(204,198,197,.5);
+            float: left;
+            height: 70px;
+            margin: 0 30px 30px 0;
+            position: relative;
+            width: 70px;
+            -webkit-transition: all .1s linear;
+            transition: all .1s linear;
+        }
+
+            .button:after {
+                color: #e9e6e4;
+                content: "";
+                display: block;
+                font-size: 30px;
+                height: 30px;
+                text-decoration: none;
+                text-shadow: 0px -1px 1px #bdb5b4, 1px 1px 1px white;
+                position: absolute;
+                width: 30px;
+            }
+
+
+        .heart:after {
+            content: "Ω";
+            left: 21px;
+            top: 21px;
+        }
+
+        .flower:after {
+            content: "✿";
+            left: 23px;
+            top: 19px;
+        }
+
+        .tick:after {
+            content: "✔";
+            left: 23px;
+            top: 20px;
+        }
+
+        .cross:after {
+            content: "✖";
+            left: 24px;
+            top: 19px;
+        }
+
+        .button:hover {
+            background-image: -webkit-linear-gradient(top, #fff, #f4f1ee);
+            background-image: linear-gradient(top, #fff, #f4f1ee);
+            color: #0088cc;
+        }
+
+        .heart:hover:after {
+            color: #0088cc;
+            text-shadow: 0px 0px 6px #39a4c2;
+        }
+
+        .flower:hover:after {
+            color: #f99e4e;
+            text-shadow: 0px 0px 6px #f99e4e;
+        }
+
+        .tick:hover:after {
+            color: #83d244;
+            text-shadow: 0px 0px 6px #83d244;
+        }
+
+        .cross:hover:after {
+            color: #eb2f2f;
+            text-shadow: 0px 0px 6px #eb2f2f;
+        }
+
+
+
+        .button:active {
+            background-image: -webkit-linear-gradient(top, #efedec, #f7f4f4);
+            background-image: linear-gradient(top, #efedec, #f7f4f4);
+            box-shadow: 0 3px 5px 0 rgba(0,0,0,.4), inset 0px -3px 1px 1px rgba(204,198,197,.5);
+        }
+
+            .button:active:after {
+                color: #dbd2d2;
+                text-shadow: 0px -1px 1px #bdb5b4, 0px 1px 1px white;
+            }
+    </style>
+
+
+
+
+
+    <!-- codeMirror -->
+    <link rel=stylesheet href="doc/docs.css">
+    <link rel="stylesheet" href="lib/codemirror.css">
+    <link rel="stylesheet" href="addon/dialog/dialog.css">
+    <link rel="stylesheet" href="monokai.css">
+    <script src="lib/codemirror.js"></script>
+    <script src="addon/search/searchcursor.js"></script>
+    <script src="addon/search/search.js"></script>
+    <script src="addon/dialog/dialog.js"></script>
+    <script src="addon/edit/matchbrackets.js"></script>
+    <script src="addon/edit/closebrackets.js"></script>
+    <script src="addon/comment/comment.js"></script>
+    <script src="mode/javascript.js"></script>
+    <script src="keymap/sublime.js"></script>
+
+    <style>
+        .CodeMirror {
+            height: 500px;
+            border: 1px solid #ddd;
+        }
+
+        .CodeMirror-scroll {
+            max-height: 500px;
+        }
+
+        .CodeMirror pre {
+            padding-left: 7px;
+            line-height: 1.25;
+        }
+    </style>
+
+</head>
+
+
+<body>
+    <h1 style="text-align:center">ESP8266 HTML5 IDE</h1>
+    <h1 style="text-align:center">Enter your Botino ip: <input type="text" id="ip" value="192.168.31.50" onblur='mod()' /></h1>
+
+     <div>
+        <div id="buttons" style=" width:70px; margin:40px">
+            <a id="b1" class="button tick"></a>
+            <a id="b2" class="button cross"></a>
+            <a id="b3" class="button heart" onclick="compile()"></a>
+            <a id="b4" class="button flower"></a>
+        </div>
+        Loop Speed:<input id="loopSpeed" value="40" type="number" onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+        <textarea id="code" name="code">
+
+            var count=0;
+
+            function setup() {
+                count=0;
+                //set up
+                DoNotDisplayMessage();
+                PinMode(5, "OUTPUT");
+                PinMode(0, "OUTPUT");
+                PinMode(4, "OUTPUT");
+                PinMode(2, "OUTPUT");
+            }
+
+
+            function loop() {
+                //your logic here
+
+                if(count==1)
+                {
+                    consoleUpdate(count);
+                    DigitalWrite(0, "HIGH");
+                    AnalogWrite(5, 1024);
+                    // var DRresult = DigitalRead(1);
+                    // var ARresult = AnalogRead(13);
+                    // consoleUpdate(DRresult+" and "+ARresult);
+                    count=0;
+                }
+                else
+                {
+                    consoleUpdate(count);
+                    AnalogWrite(5, 0);
+                    count++;
+                }
+
+            }
+
+            function whenStop(){
+                consoleUpdate("dfsdgdhrsdfgdesger");
+                AnalogWrite(5, 0);
+                AnalogWrite(0, 0);
+                AnalogWrite(4, 0);
+                AnalogWrite(2, 0);
+            }
+
+
+        </textarea>
+        <script>
+    var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        lineNumbers: true,
+        mode: "javascript",
+        keyMap: "sublime",
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        showCursorWhenSelecting: true,
+        theme: "monokai",
+        tabSize: 2,
+    });
+        </script>
+
+        <a style=" margin:10px 30px 15px 140px;">(ps: CTRL+F for search and CTRL+/ for comment )</a>
+        <textarea id="console1" style=" margin:10px 30px 15px 140px; height:295px; width:100%; background-color:#343434; font-size: 16px; color: grey;" readonly="readonly">~$ Wellcome</textarea>
+
+    </div>
+
+
+
+
+
+
+    <script>
+
+        var ipValue;
+        var connection;
+        var mess;
+        var messageCount = 0;
+
+        var DR_OUTPUT;
+        var AR_OUTPUT;
+        var showallmessage = true
+
+        function DoNotDisplayMessage() {
+            showallmessage = false;
+        }
+        function DisplayAllMessage() {
+            showallmessage = true;
+        }
+
+        function consoleUpdate(text) {
+            var content = document.getElementById("console1").textContent;
+            document.getElementById("console1").textContent = "~$ " + text + "\n" + content;
+        }
+
+        function mod() {
+            messageCount = 0;
+            var text = "ws://" + document.getElementById('ip').value + ":81/";//"ws://192.168.31.50:81/"
+            ipValue = text;
+
+            consoleUpdate("IP value changed to: " + ipValue);
+
+
+            connection = new WebSocket(ipValue, ['arduino']);
+            connection.onopen = function (evt) {
+
+                consoleUpdate("CONNECTED");
+            };
+            connection.onclose = function (evt) {
+
+                consoleUpdate("DISCONNECTED");
+            };
+            connection.onmessage = function (evt) {
+                mess = evt.data;
+                messageCount++;
+                var checkPoint = evt.data.toString().substring(0, 2);
+                if (checkPoint == "DR") DR_OUTPUT = evt.data.toString().substring(2);
+                else if (checkPoint == "AR") AR_OUTPUT = evt.data.toString().substring(2);
+                if (showallmessage)
+                    consoleUpdate("From NODEMCU: " + mess);
+            };
+            connection.onerror = function (evt) {
+
+                consoleUpdate("ERROR: " + evt.data);
+            };
+
+        }
+
+
+        function GetPin(pin) {
+            if (pin > 10)
+                return pin;
+            else return "0" + pin;
+        }
+
+        function PinMode(pin, mode) {
+            if (mode == "INPUT") { connection.send("PM" + GetPin(pin) + "I"); }
+            else if (mode == "OUTPUT") { connection.send("PM" + GetPin(pin) + "O"); }
+        }
+
+        function DigitalWrite(pin, HL) {
+            if (HL == "HIGH") { connection.send("DW" + GetPin(pin) + "H"); }
+            else if (HL == "LOW") { connection.send("DW" + GetPin(pin) + "L"); }
+
+        }
+
+        function AnalogWrite(pin, value) {
+            var C = messageCount;
+            connection.send("AW" + GetPin(pin) + value);
+        }
+
+        function DigitalRead(pin) {
+            connection.send("DR" + GetPin(pin));
+            return parseInt(DR_OUTPUT);
+        }
+
+        function AnalogRead(pin) {
+            connection.send("AR" + GetPin(pin));
+            return parseInt(AR_OUTPUT);
+        }
+
+        function delay(milliseconds) {
+            var start = new Date().getTime();
+            for (var i = 0; i < 1e7; i++) {
+                if ((new Date().getTime() - start) > milliseconds) {
+                    break;
+                }
+            }
+        }
+
+
+
+
+        var lastRun = Date.now();
+        var minDelta = 40;
+        var t;
+
+
+
+
+
+        //var MainSetup = function () {
+        //    setup();
+        //};
+        //var Mainloop = function ()
+        //{
+        //    t = window.setTimeout(Mainloop, minDelta);
+        //    var now = Date.now();
+        //    var delta = now - lastRun;
+        //    lastRun = now;
+        //    console.log(delta);
+        //    loop();
+        //};
+        //function startloop() {
+        //    if (t == null) {         
+        //        consoleUpdate("MCU JOB START");
+        //        MainSetup(); window.setTimeout(Mainloop, minDelta);
+        //    }
+        //}
+        //function stoploop() {
+        //    clearTimeout(t);
+        //    whenStop();
+        //    t = null;
+        //    consoleUpdate("MCU STOP JOB");
+        //}
+
+
+
+
+
+
+
+
+        var data = utf8to16(Base64toHuman("wqAgwqAgwqAgwqAgdmFyIE1haW5TZXR1cCA9IGZ1bmN0aW9uICgpIHvCoCDCoCDCoCDCoCDCoCDCoCBzZXR1cCgpO8KgIMKgIMKgIMKgIH07wqAgwqAgwqAgwqAgdmFyIE1haW5sb29wID0gZnVuY3Rpb24gKCnCoCDCoCDCoCDCoCB7wqAgwqAgwqAgwqAgwqAgwqAgdCA9IHdpbmRvdy5zZXRUaW1lb3V0KE1haW5sb29wLCBtaW5EZWx0YSk7wqAgwqAgwqAgwqAgwqAgwqAgdmFyIG5vdyA9IERhdGUubm93KCk7wqAgwqAgwqAgwqAgwqAgwqAgdmFyIGRlbHRhID0gbm93IC0gbGFzdFJ1bjvCoCDCoCDCoCDCoCDCoCDCoCBsYXN0UnVuID0gbm93O8KgIMKgIMKgIMKgIMKgIMKgIGNvbnNvbGUubG9nKGRlbHRhKTvCoCDCoCDCoCDCoCDCoCDCoCBsb29wKCk7wqAgwqAgwqAgwqAgfTvCoCDCoCDCoCDCoCBmdW5jdGlvbiBzdGFydGxvb3AoKSB7wqAgwqAgwqAgwqAgwqAgwqAgaWYgKHQgPT0gbnVsbCkgeyDCoCDCoCDCoCDCoMKgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgY29uc29sZVVwZGF0ZSgiTUNVIEpPQiBTVEFSVCIpO8KgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIE1haW5TZXR1cCgpOyB3aW5kb3cuc2V0VGltZW91dChNYWlubG9vcCwgbWluRGVsdGEpO8KgIMKgIMKgIMKgIMKgIMKgIH3CoCDCoCDCoCDCoCB9wqAgwqAgwqAgwqAgZnVuY3Rpb24gc3RvcGxvb3AoKSB7wqAgwqAgwqAgwqAgwqAgwqAgY2xlYXJUaW1lb3V0KHQpO8KgIMKgIMKgIMKgIMKgIMKgIHdoZW5TdG9wKCk7wqAgwqAgwqAgwqAgwqAgwqAgdCA9IG51bGw7wqAgwqAgwqAgwqAgwqAgwqAgY29uc29sZVVwZGF0ZSgiTUNVIFNUT1AgSk9CIik7wqAgwqAgwqAgwqAgfQ=="));
+    
+        var ls = document.getElementById("loopSpeed");
+        var buttonArea = document.getElementById("buttons");
+
+        ls.onblur = function () {
+            if (ls.value < 10) { minDelta = 10; }
+            else { minDelta = ls.value; }
+        }
+        
+
+
+
+
+        function compile() {
+            buttonArea.innerHTML = "  <a id=\"b1\" class=\"button tick\"></a><a id=\"b2\" class=\"button cross\"></a> <a id=\"b3\" class=\"button heart\"></a><a id=\"b4\" class=\"button flower\"></a>";
+            eval(data + editor.doc.getValue());
+            helpers.addEvent(document.getElementById("b1"), "click", function (ev) { startloop(); });
+            helpers.addEvent(document.getElementById("b2"), "click", function (ev) { stoploop(); });
+            helpers.addEvent(document.getElementById("b3"), "click", function (ev) { compile(); });
+            consoleUpdate("compiled ready to go!");          
+        };
+
+
+
+
+        var helpers = {
+            addEvent: function (obj, type, fn) {
+                if (obj.addEventListener) {
+                    obj.addEventListener(type, fn, false);
+                } else if (obj.attachEvent) {
+                    obj['e' + type + fn] = fn;
+                    obj[type + fn] = function () {
+                        obj['e' + type + fn](window.event);
+                    };
+                    obj.attachEvent("on" + type, obj[type + fn]);
+                }
+            },
+            triggerEvent: function (el, type) {
+                if ((el[type] || false) && typeof el[type] == 'function') {
+                    el[type](el);
+                }
+            }
+        };
+
+
+
+        function utf8to16(str) {
+            var out, i, len, c;
+            var char2, char3;
+            out = "";
+            len = str.length;
+            i = 0;
+            while (i < len) {
+                c = str.charCodeAt(i++);
+                switch (c >> 4) {
+                    case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
+                        out += str.charAt(i - 1);
+                        break;
+                    case 12: case 13:
+                        char2 = str.charCodeAt(i++);
+                        out += String.fromCharCode(((c & 0x1F) << 6) | (char2 & 0x3F));
+                        break;
+                    case 14:
+                        char2 = str.charCodeAt(i++);
+                        char3 = str.charCodeAt(i++);
+                        out += String.fromCharCode(((c & 0x0F) << 12) | ((char2 & 0x3F) << 6) | ((char3 & 0x3F) << 0));
+                        break;
+                }
+            }
+            return out;
+        }
+
+        function Base64toHuman(str) {
+            var c1, c2, c3, c4;
+            var base64DecodeChars = new Array(
+                    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57,
+                    58, 59, 60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6,
+                    7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+                    25, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36,
+                    37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1,
+                    -1, -1);
+            var i = 0, len = str.length, string = '';
+            while (i < len) {
+                do { c1 = base64DecodeChars[str.charCodeAt(i++) & 0xff] }
+                while (i < len && c1 == -1); if (c1 == -1) break;
+                do { c2 = base64DecodeChars[str.charCodeAt(i++) & 0xff] }
+                while (i < len && c2 == -1); if (c2 == -1) break;
+                string += String.fromCharCode((c1 << 2) | ((c2 & 0x30) >> 4));
+                do { c3 = str.charCodeAt(i++) & 0xff; if (c3 == 61) return string; c3 = base64DecodeChars[c3] }
+                while (i < len && c3 == -1); if (c3 == -1) break;
+                string += String.fromCharCode(((c2 & 0XF) << 4) | ((c3 & 0x3C) >> 2));
+                do { c4 = str.charCodeAt(i++) & 0xff; if (c4 == 61) return string; c4 = base64DecodeChars[c4] }
+                while (i < len && c4 == -1); if (c4 == -1) break;
+                string += String.fromCharCode(((c3 & 0x03) << 6) | c4);
+            }
+            return string;
+        }
+
+
+    </script>
+
+
+
+
+</body>
+
+
+</html>
