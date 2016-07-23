@@ -8,7 +8,7 @@
 
     <style>
         html, body {
-            font-family: 'Cousine', 'monospace';
+            font-family:'monospace';
             color: #C0C0C0;
             min-height: 100%;
         }
@@ -120,6 +120,12 @@
     </style>
 
 
+    <!--error check-->
+    <link rel="stylesheet" href="errorcheck/show-js-error.css" />
+    <script src="errorcheck/show-js-error.js"></script>
+
+    <!--test error check-->
+
 
 
 
@@ -135,7 +141,7 @@
     <script src="addon/edit/matchbrackets.js"></script>
     <script src="addon/edit/closebrackets.js"></script>
     <script src="addon/comment/comment.js"></script>
-    <script src="mode/javascript.js"></script>
+    <script src="modejavascript.js"></script>
     <script src="keymap/sublime.js"></script>
 
     <style>
@@ -158,17 +164,17 @@
 
 
 <body>
-    <h1 style="text-align:center">ESP8266 HTML5 IDE</h1>
-    <h1 style="text-align:center">Enter your Botino ip: <input type="text" id="ip" value="192.168.31.50" onblur='mod()' /></h1>
+    <h1 style="text-align:center">Botino Integrated Development Environment</h1>
+    <h1 style="text-align:center">Enter your Botino IP: <input type="text" id="ip" value="192.168.31.50" onblur='mod()' /></h1>
 
      <div>
         <div id="buttons" style=" width:70px; margin:40px">
             <a id="b1" class="button tick"></a>
             <a id="b2" class="button cross"></a>
             <a id="b3" class="button heart" onclick="compile()"></a>
-            <a id="b4" class="button flower"></a>
+            <a id="b4" class="button flower" onclick="Botino_API_Documentation()"></a>
         </div>
-        Loop Speed:<input id="loopSpeed" value="40" type="number" onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
+        Loop Speed:<input id="loopSpeed" value="400" type="number" onkeypress='return event.charCode >= 48 && event.charCode <= 57' />
         <textarea id="code" name="code">
 
             var count=0;
@@ -207,11 +213,15 @@
             }
 
             function whenStop(){
-                consoleUpdate("dfsdgdhrsdfgdesger");
+                consoleUpdate("stopping...");
                 AnalogWrite(5, 0);
                 AnalogWrite(0, 0);
                 AnalogWrite(4, 0);
                 AnalogWrite(2, 0);
+            }
+
+            function customButton(){
+                Botino_API_Documentation();
             }
 
 
@@ -230,7 +240,7 @@
         </script>
 
         <a style=" margin:10px 30px 15px 140px;">(ps: CTRL+F for search and CTRL+/ for comment )</a>
-        <textarea id="console1" style=" margin:10px 30px 15px 140px; height:295px; width:100%; background-color:#343434; font-size: 16px; color: grey;" readonly="readonly">~$ Wellcome</textarea>
+        <textarea id="console1" style=" margin:10px 30px 15px 140px; height:295px; width:100%; background-color:#343434; font-size: 16px; color: grey;" readonly="readonly">~$ </textarea>
 
     </div>
 
@@ -302,30 +312,82 @@
             else return "0" + pin;
         }
 
+        function Botino_API_Documentation() {
+
+            consoleUpdate("...........................................................................2016/7");
+            consoleUpdate("PinMode(pin, mode) //set a pin to 'input' or 'output'");
+            consoleUpdate("DigitalWrite(pin, HL) //set voltage of a pin to 'HIGH' or 'LOW'");
+            consoleUpdate("AnalogWrite(pin, value) //set pin to the value");
+            consoleUpdate("DigitalRead(pin) //read the pin in Digital, this function will have something in return");
+            consoleUpdate("AnalogRead(pin) //set a pin in Analogto, this function will have something in return");
+            consoleUpdate("delay(milliseconds) //a delay function use this one carefully (ps: best way to delay the process is change the value of 'loop speed')");
+            consoleUpdate(".................................................................................");
+            consoleUpdate("API REFERENCE:");
+            consoleUpdate(" ");
+            consoleUpdate(".................................................................................");
+            consoleUpdate("btw thx codemirror");
+            consoleUpdate("for more information about this project and the developer contact GUOJI(https://github.com/GUOJI)");
+            consoleUpdate("u need download the Arduino part of this project and install to ur ESP8266 chip in order to use this IDE");
+            consoleUpdate("buttons on the left side are 'run'; 'stop'; 'compile' and a 'custom button'");
+            consoleUpdate("this is an IDE for Botino");
+            consoleUpdate(".................................................................................");
+            consoleUpdate("INTRODUCTION:");
+            consoleUpdate(" ");
+            consoleUpdate("................");
+            consoleUpdate(" Botino(V0.0.2)");
+            consoleUpdate("................");
+            consoleUpdate(" ");
+        }
+        Botino_API_Documentation();
+
         function PinMode(pin, mode) {
-            if (mode == "INPUT") { connection.send("PM" + GetPin(pin) + "I"); }
-            else if (mode == "OUTPUT") { connection.send("PM" + GetPin(pin) + "O"); }
+            if (connection != null) {
+                if (mode == "INPUT") { connection.send("PM" + GetPin(pin) + "I"); }
+                else if (mode == "OUTPUT") { connection.send("PM" + GetPin(pin) + "O"); }
+            }
+            else {
+                consoleUpdate("NOT CONNECTED");
+            }
         }
 
         function DigitalWrite(pin, HL) {
-            if (HL == "HIGH") { connection.send("DW" + GetPin(pin) + "H"); }
-            else if (HL == "LOW") { connection.send("DW" + GetPin(pin) + "L"); }
-
+            if (connection != null) {
+                if (HL == "HIGH") { connection.send("DW" + GetPin(pin) + "H"); }
+                else if (HL == "LOW") { connection.send("DW" + GetPin(pin) + "L"); }
+            }
+            else {
+                consoleUpdate("NOT CONNECTED");
+            }
         }
 
         function AnalogWrite(pin, value) {
-            var C = messageCount;
-            connection.send("AW" + GetPin(pin) + value);
+            if (connection != null) {
+                var C = messageCount;
+                connection.send("AW" + GetPin(pin) + value);
+            }
+            else {
+                consoleUpdate("NOT CONNECTED");
+            }
         }
 
         function DigitalRead(pin) {
-            connection.send("DR" + GetPin(pin));
-            return parseInt(DR_OUTPUT);
+            if (connection != null) {
+                connection.send("DR" + GetPin(pin));
+                return parseInt(DR_OUTPUT);
+            }
+            else {
+                consoleUpdate("NOT CONNECTED");
+            }
         }
 
         function AnalogRead(pin) {
-            connection.send("AR" + GetPin(pin));
-            return parseInt(AR_OUTPUT);
+            if (connection != null) {
+                connection.send("AR" + GetPin(pin));
+                return parseInt(AR_OUTPUT);
+            }
+            else {
+                consoleUpdate("NOT CONNECTED");
+            }
         }
 
         function delay(milliseconds) {
@@ -341,7 +403,7 @@
 
 
         var lastRun = Date.now();
-        var minDelta = 40;
+        var minDelta = 400;
         var t;
 
 
@@ -400,7 +462,8 @@
             helpers.addEvent(document.getElementById("b1"), "click", function (ev) { startloop(); });
             helpers.addEvent(document.getElementById("b2"), "click", function (ev) { stoploop(); });
             helpers.addEvent(document.getElementById("b3"), "click", function (ev) { compile(); });
-            consoleUpdate("compiled ready to go!");          
+            helpers.addEvent(document.getElementById("b4"), "click", function (ev) { customButton(); });
+            consoleUpdate("code ready to go! have fun! ");          
         };
 
 
@@ -486,7 +549,7 @@
 
 
 
-
+Developer's Github: <a href="https://github.com/GUOJI">https://github.com/GUOJI</a>
 </body>
 
 
